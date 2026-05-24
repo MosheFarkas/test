@@ -4,337 +4,709 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Understanding Autism</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --bg: #050510;
+      --bg2: #0a0a1f;
+      --purple: #6c63ff;
+      --cyan: #00d4ff;
+      --pink: #ff6b9d;
+      --gold: #ffd700;
+      --text: #e8eaf6;
+      --dim: #8892b0;
+      --glass: rgba(255,255,255,0.04);
+      --gborder: rgba(255,255,255,0.09);
     }
-
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: Georgia, "Times New Roman", serif;
-      background-color: #f9f7f4;
-      color: #2c2c2c;
-      line-height: 1.75;
-      font-size: 17px;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      cursor: none;
     }
 
-    header {
-      background-color: #2c4a6e;
-      color: #ffffff;
-      padding: 48px 0 40px;
-      text-align: center;
+    /* ── CURSOR ── */
+    #cur {
+      position: fixed; width: 22px; height: 22px;
+      border: 2px solid var(--cyan); border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      transition: transform 0.15s, border-color 0.2s;
+      mix-blend-mode: difference;
     }
-
-    header h1 {
-      font-size: 2.6rem;
-      font-weight: normal;
-      letter-spacing: 0.02em;
-      margin-bottom: 10px;
+    #cur-dot {
+      position: fixed; width: 5px; height: 5px;
+      background: var(--cyan); border-radius: 50%;
+      pointer-events: none; z-index: 9999;
     }
+    .hoverable:hover ~ #cur, body:has(.hoverable:hover) #cur { transform: scale(2.2); }
 
-    header p {
-      font-size: 1.05rem;
-      color: #c8d8ec;
-      font-style: italic;
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 3px; }
+
+    /* ── NAV ── */
+    #nav {
+      position: fixed; top: 0; width: 100%; z-index: 200;
+      padding: 18px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.4s, backdrop-filter 0.4s;
     }
-
-    nav {
-      background-color: #1e3552;
-      padding: 0;
-      text-align: center;
+    #nav.scrolled {
+      background: rgba(5,5,16,0.88);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--gborder);
     }
+    .nav-brand {
+      font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a {
+      color: var(--dim); text-decoration: none; font-size: 0.87rem;
+      letter-spacing: 0.04em; position: relative; transition: color 0.3s;
+    }
+    .nav-links a::after {
+      content:''; position:absolute; bottom:-4px; left:0;
+      width:0; height:2px; background:var(--cyan); transition: width 0.3s;
+    }
+    .nav-links a:hover { color:#fff; }
+    .nav-links a:hover::after { width:100%; }
 
-    nav a {
+    /* ── HERO ── */
+    #hero {
+      height: 100vh; position: relative;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    #canvas {
+      position: absolute; inset: 0; z-index: 0;
+    }
+    .hero-inner {
+      position: relative; z-index: 1; text-align: center;
+      max-width: 820px; padding: 0 24px;
+    }
+    .hero-pill {
       display: inline-block;
-      color: #d6e4f5;
-      text-decoration: none;
-      padding: 14px 22px;
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      font-size: 0.9rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      padding: 6px 20px; border: 1px solid var(--cyan);
+      border-radius: 100px; font-size: 0.78rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--cyan); margin-bottom: 30px;
+      animation: fadeUp 1s ease both;
+    }
+    .hero-h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem); font-weight: 700;
+      line-height: 1.08; margin-bottom: 26px;
+      animation: fadeUp 1s 0.2s ease both;
+    }
+    .grad-text {
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 50%, var(--pink) 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      animation: gradShift 5s ease infinite;
+    }
+    .hero-sub {
+      color: var(--dim); font-size: 1.1rem; line-height: 1.75;
+      max-width: 540px; margin: 0 auto 44px;
+      animation: fadeUp 1s 0.4s ease both;
+    }
+    .hero-btn {
+      display: inline-block; padding: 15px 40px;
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      color: #fff; border-radius: 50px;
+      text-decoration: none; font-weight: 600; font-size: 0.95rem;
+      box-shadow: 0 0 40px rgba(108,99,255,0.45);
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: fadeUp 1s 0.6s ease both;
+    }
+    .hero-btn:hover { transform: translateY(-3px); box-shadow: 0 0 60px rgba(108,99,255,0.6); }
+    .scroll-hint {
+      position: absolute; bottom: 38px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      color: var(--dim); font-size: 0.72rem; letter-spacing: 0.12em;
+      animation: fadeIn 2s 1s ease both;
+    }
+    .scroll-line {
+      width: 1px; height: 52px;
+      background: linear-gradient(to bottom, var(--cyan), transparent);
+      animation: scrollPulse 2.2s ease infinite;
     }
 
-    nav a:hover {
-      background-color: #2c4a6e;
-      color: #ffffff;
+    /* ── STATS ── */
+    #stats-bar {
+      padding: 72px 40px;
+      background: linear-gradient(90deg, rgba(108,99,255,0.07), rgba(0,212,255,0.07));
+      border-top: 1px solid var(--gborder); border-bottom: 1px solid var(--gborder);
+    }
+    .stats-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; text-align: center;
+    }
+    .stat h3 {
+      font-family: 'Space Grotesk', sans-serif; font-size: 2.8rem; font-weight: 700;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .stat p { color: var(--dim); font-size: 0.88rem; margin-top: 6px; line-height: 1.5; }
+    .bar-wrap { height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; margin-top: 14px; overflow: hidden; }
+    .bar { height: 100%; border-radius: 2px; background: linear-gradient(to right, var(--purple), var(--cyan)); width: 0; transition: width 1.6s ease; }
+
+    /* ── SHARED SECTION ── */
+    .section {
+      max-width: 1200px; margin: 0 auto; padding: 110px 40px;
+    }
+    .s-tag {
+      display: block; font-size: 0.77rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--cyan); margin-bottom: 16px;
+    }
+    .s-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2rem, 4vw, 2.9rem); font-weight: 700;
+      line-height: 1.2; margin-bottom: 18px;
+    }
+    .s-desc {
+      color: var(--dim); font-size: 1.03rem; line-height: 1.78;
+      max-width: 640px; margin-bottom: 60px;
     }
 
-    main {
-      max-width: 820px;
-      margin: 0 auto;
-      padding: 50px 24px 80px;
+    /* ── GLASS CARD BASE ── */
+    .gc {
+      background: var(--glass); border: 1px solid var(--gborder);
+      border-radius: 20px; padding: 32px;
+      transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+      position: relative; overflow: hidden;
     }
-
-    section {
-      margin-bottom: 56px;
+    .gc::before {
+      content:''; position:absolute; inset:0;
+      background: linear-gradient(135deg, rgba(108,99,255,0.05), transparent);
+      opacity:0; transition: opacity 0.3s;
     }
+    .gc:hover { transform: translateY(-7px); box-shadow: 0 24px 64px rgba(0,0,0,0.45), 0 0 40px rgba(108,99,255,0.12); border-color: rgba(108,99,255,0.3); }
+    .gc:hover::before { opacity:1; }
 
-    h2 {
-      font-size: 1.6rem;
-      font-weight: normal;
-      color: #2c4a6e;
-      border-bottom: 1px solid #c2cfd9;
-      padding-bottom: 8px;
-      margin-bottom: 20px;
+    /* ── WHAT IS SECTION ── */
+    .what-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+    .what-visual { position: relative; height: 380px; }
+    .rings-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .ring {
+      position: absolute; border-radius: 50%; border: 1.5px solid;
+      animation: ringPulse 3s ease infinite;
     }
-
-    h3 {
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: #2c2c2c;
-      margin: 24px 0 8px;
+    .ring:nth-child(1) { width:90px; height:90px; border-color:var(--pink); animation-delay:0s; }
+    .ring:nth-child(2) { width:170px; height:170px; border-color:var(--purple); animation-delay:0.5s; }
+    .ring:nth-child(3) { width:250px; height:250px; border-color:var(--cyan); animation-delay:1s; }
+    .ring:nth-child(4) { width:330px; height:330px; border-color:rgba(0,212,255,0.25); animation-delay:1.5s; }
+    .ring-core {
+      position:absolute; width:66px; height:66px; border-radius:50%;
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.7rem; z-index:1; animation: floatY 3s ease infinite;
+      box-shadow: 0 0 30px rgba(108,99,255,0.5);
     }
-
-    p {
-      margin-bottom: 16px;
+    .orbit-ring {
+      position:absolute; border-radius:50%; animation: spin linear infinite;
     }
-
-    ul {
-      padding-left: 28px;
-      margin-bottom: 16px;
+    .orbit-dot {
+      width:11px; height:11px; border-radius:50%;
+      position:absolute; top:-5.5px; left:50%; transform:translateX(-50%);
     }
-
-    li {
-      margin-bottom: 8px;
+    .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 60px; }
+    .mini-c {
+      background: var(--glass); border: 1px solid var(--gborder);
+      border-radius: 14px; padding: 22px;
+      transition: border-color 0.3s, box-shadow 0.3s;
     }
+    .mini-c:hover { border-color: var(--purple); box-shadow: 0 0 20px rgba(108,99,255,0.15); }
+    .mini-c .ico { font-size:1.5rem; margin-bottom:10px; }
+    .mini-c h4 { font-size:0.82rem; font-weight:700; color:var(--cyan); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; }
+    .mini-c p { font-size:0.87rem; color:var(--dim); line-height:1.55; }
 
-    .intro-box {
-      background-color: #eaf0f7;
-      border-left: 4px solid #2c4a6e;
-      padding: 22px 26px;
-      margin-bottom: 40px;
-      font-size: 1.05rem;
+    /* ── QUOTE ── */
+    #quote-band {
+      padding: 100px 40px; text-align:center; position:relative; overflow:hidden;
     }
-
-    .fact-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-top: 20px;
+    #quote-band::before {
+      content:''; position:absolute; inset:0;
+      background: radial-gradient(ellipse at center, rgba(108,99,255,0.12) 0%, transparent 70%);
     }
-
-    .fact-card {
-      background-color: #ffffff;
-      border: 1px solid #d4dde5;
-      padding: 20px 22px;
+    .q-text {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.4rem, 3vw, 2.1rem); font-weight:500;
+      line-height:1.55; max-width:760px; margin:0 auto 22px;
+      position:relative;
     }
+    .q-mark { font-size:5rem; color:var(--purple); opacity:0.35; line-height:0; vertical-align:-0.38em; }
+    .q-by { color:var(--dim); font-size:0.88rem; position:relative; }
 
-    .fact-card h3 {
-      margin-top: 0;
-      color: #2c4a6e;
-      font-size: 1rem;
+    /* ── SIGNS (TABS) ── */
+    .tabs { display:flex; gap:12px; margin-bottom:40px; flex-wrap:wrap; }
+    .tab-btn {
+      padding:10px 26px; border-radius:100px;
+      border:1px solid var(--gborder); background:var(--glass);
+      color:var(--dim); font-family:'Inter',sans-serif; font-size:0.88rem;
+      cursor:pointer; transition:all 0.3s;
     }
-
-    .fact-card p {
-      font-size: 0.95rem;
-      margin-bottom: 0;
+    .tab-btn.on {
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      border-color:transparent; color:#fff;
+      box-shadow: 0 0 22px rgba(108,99,255,0.45);
     }
-
-    blockquote {
-      border-left: 3px solid #9aafbf;
-      margin: 28px 0;
-      padding: 12px 24px;
-      color: #4a5a6a;
-      font-style: italic;
+    .tab-btn:not(.on):hover { border-color:var(--purple); color:var(--text); }
+    .tab-panel { display:none; }
+    .tab-panel.on { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+    .sym-card {
+      background:var(--glass); border:1px solid var(--gborder);
+      border-radius:16px; padding:28px 24px;
+      transition:all 0.3s; position:relative; overflow:hidden;
     }
+    .sym-card::after {
+      content:''; position:absolute; bottom:0; left:0;
+      width:100%; height:3px;
+      background: linear-gradient(to right, var(--purple), var(--cyan));
+      transform:scaleX(0); transform-origin:left; transition:transform 0.3s;
+    }
+    .sym-card:hover { transform:translateY(-5px); border-color:rgba(108,99,255,0.3); }
+    .sym-card:hover::after { transform:scaleX(1); }
+    .sym-card .ico { font-size:2rem; margin-bottom:14px; }
+    .sym-card h4 { font-size:0.93rem; font-weight:700; margin-bottom:8px; }
+    .sym-card p { font-size:0.86rem; color:var(--dim); line-height:1.56; }
 
+    /* ── CAUSES ── */
+    .causes-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+    .cause-c {
+      background:var(--glass); border:1px solid var(--gborder);
+      border-radius:20px; padding:36px 28px; text-align:center;
+      transition:all 0.3s; position:relative; overflow:hidden;
+    }
+    .cause-c::before {
+      content:''; position:absolute; top:0; left:0; right:0;
+      height:2px; background: linear-gradient(to right, var(--purple), var(--cyan));
+    }
+    .cause-c:hover { transform:translateY(-9px); box-shadow:0 28px 56px rgba(0,0,0,0.4), 0 0 36px rgba(108,99,255,0.14); }
+    .cause-c .ico { font-size:2.8rem; display:block; margin-bottom:18px; }
+    .cause-c h3 { font-size:1.05rem; font-weight:700; margin-bottom:10px; }
+    .cause-c p { font-size:0.88rem; color:var(--dim); line-height:1.65; }
+    .myth-box {
+      background: linear-gradient(135deg, rgba(255,107,157,0.07), rgba(255,107,157,0.02));
+      border:1px solid rgba(255,107,157,0.22); border-radius:20px;
+      padding:32px 36px; margin-top:40px; display:flex; gap:22px; align-items:flex-start;
+    }
+    .myth-box .ico { font-size:2.4rem; flex-shrink:0; }
+    .myth-box h3 { color:var(--pink); font-size:1.05rem; margin-bottom:8px; }
+    .myth-box p { color:var(--dim); font-size:0.93rem; line-height:1.7; }
+
+    /* ── TIMELINE ── */
+    .timeline { position:relative; max-width:680px; margin:0 auto; padding-left:56px; }
+    .timeline::before {
+      content:''; position:absolute; left:18px; top:0; bottom:0;
+      width:2px; background:linear-gradient(to bottom, var(--purple), var(--cyan), transparent);
+    }
+    .tl-item {
+      position:relative; margin-bottom:48px;
+      opacity:0; transform:translateX(-22px); transition:all 0.6s ease;
+    }
+    .tl-item.show { opacity:1; transform:translateX(0); }
+    .tl-dot {
+      position:absolute; left:-46px; top:5px;
+      width:20px; height:20px; border-radius:50%;
+      background:var(--bg); border:3px solid var(--purple);
+      animation:dotGlow 2.2s ease infinite;
+      transition:background 0.3s, transform 0.3s;
+    }
+    .tl-item:hover .tl-dot { background:var(--purple); transform:scale(1.3); }
+    .tl-step { font-size:0.73rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--cyan); margin-bottom:7px; }
+    .tl-item h3 { font-size:1.1rem; font-weight:700; margin-bottom:9px; }
+    .tl-item p { color:var(--dim); font-size:0.91rem; line-height:1.67; }
+
+    /* ── SUPPORT ── */
+    .sup-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+    .sup-c {
+      background:var(--glass); border:1px solid var(--gborder);
+      border-radius:20px; padding:32px 26px;
+      transition:all 0.3s; position:relative; overflow:hidden;
+    }
+    .sup-glow {
+      position:absolute; width:90px; height:90px; border-radius:50%;
+      filter:blur(38px); opacity:0; transition:opacity 0.3s;
+      top:-20px; right:-20px;
+    }
+    .sup-c:hover .sup-glow { opacity:0.28; }
+    .sup-c:hover { transform:translateY(-6px); box-shadow:0 20px 50px rgba(0,0,0,0.3); }
+    .sup-icon {
+      width:56px; height:56px; border-radius:15px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.55rem; margin-bottom:18px;
+    }
+    .sup-c h3 { font-size:1rem; font-weight:700; margin-bottom:9px; }
+    .sup-c p { font-size:0.87rem; color:var(--dim); line-height:1.6; }
+
+    /* ── RESOURCES ── */
+    .res-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+    .res-c {
+      background:var(--glass); border:1px solid var(--gborder);
+      border-radius:16px; padding:26px;
+      display:flex; flex-direction:column; gap:10px;
+      transition:all 0.3s;
+    }
+    .res-c:hover { border-color:var(--cyan); box-shadow:0 0 28px rgba(0,212,255,0.1); transform:translateY(-5px); }
+    .res-tag { font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--cyan); font-weight:700; }
+    .res-c h3 { font-size:0.98rem; font-weight:700; }
+    .res-c p { font-size:0.86rem; color:var(--dim); line-height:1.56; flex:1; }
+    .res-link { font-size:0.82rem; color:var(--purple); font-weight:600; transition:color 0.3s; }
+    .res-link:hover { color:var(--cyan); }
+
+    /* ── FOOTER ── */
     footer {
-      background-color: #2c2c2c;
-      color: #aaaaaa;
-      text-align: center;
-      padding: 28px 16px;
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      font-size: 0.85rem;
+      background:var(--bg2); border-top:1px solid var(--gborder);
+      padding:60px 40px; text-align:center;
     }
-
-    footer a {
-      color: #c8d8ec;
-      text-decoration: none;
+    .footer-brand {
+      font-family:'Space Grotesk',sans-serif; font-size:1.45rem; font-weight:700;
+      background:linear-gradient(135deg,var(--cyan),var(--purple));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      display:block; margin-bottom:14px;
     }
+    footer p { color:var(--dim); font-size:0.86rem; line-height:1.75; }
 
-    footer a:hover {
-      text-decoration: underline;
+    /* ── SCROLL REVEAL ── */
+    .rev { opacity:0; transform:translateY(32px); transition:all 0.75s ease; }
+    .rev.show { opacity:1; transform:none; }
+    .rev-l { opacity:0; transform:translateX(-44px); transition:all 0.75s ease; }
+    .rev-l.show { opacity:1; transform:none; }
+    .rev-r { opacity:0; transform:translateX(44px); transition:all 0.75s ease; }
+    .rev-r.show { opacity:1; transform:none; }
+    .stag > * { opacity:0; transform:translateY(22px); transition:opacity 0.5s ease, transform 0.5s ease; }
+    .stag.show > *:nth-child(1){opacity:1;transform:none;transition-delay:0.08s}
+    .stag.show > *:nth-child(2){opacity:1;transform:none;transition-delay:0.16s}
+    .stag.show > *:nth-child(3){opacity:1;transform:none;transition-delay:0.24s}
+    .stag.show > *:nth-child(4){opacity:1;transform:none;transition-delay:0.32s}
+    .stag.show > *:nth-child(5){opacity:1;transform:none;transition-delay:0.40s}
+    .stag.show > *:nth-child(6){opacity:1;transform:none;transition-delay:0.48s}
+
+    /* ── KEYFRAMES ── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:none} }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+    @keyframes scrollPulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
+    @keyframes ringPulse { 0%,100%{opacity:0.7;transform:scale(1)} 50%{opacity:0.35;transform:scale(1.05)} }
+    @keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-13px)} }
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    @keyframes dotGlow { 0%,100%{box-shadow:0 0 0 0 rgba(108,99,255,0.5)} 50%{box-shadow:0 0 0 9px rgba(108,99,255,0)} }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:960px){
+      .what-grid{grid-template-columns:1fr} .what-visual{height:260px}
+      .causes-grid{grid-template-columns:1fr 1fr} .sup-grid{grid-template-columns:1fr 1fr}
+      .res-grid{grid-template-columns:1fr 1fr} .stats-inner{grid-template-columns:1fr 1fr}
+      .tab-panel.on{grid-template-columns:1fr 1fr} #nav{padding:14px 24px}
     }
-
-    @media (max-width: 600px) {
-      header h1 { font-size: 1.9rem; }
-      .fact-grid { grid-template-columns: 1fr; }
-      nav a { padding: 12px 14px; font-size: 0.8rem; }
+    @media(max-width:600px){
+      .nav-links{display:none} .section{padding:64px 20px}
+      .causes-grid,.sup-grid,.res-grid,.mini-grid,.stats-inner{grid-template-columns:1fr}
+      .tab-panel.on{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>Understanding Autism</h1>
-  <p>A plain-language guide to autism spectrum disorder</p>
-</header>
+<div id="cur"></div>
+<div id="cur-dot"></div>
 
-<nav>
-  <a href="#what-is">What Is Autism</a>
-  <a href="#signs">Signs & Symptoms</a>
-  <a href="#causes">Causes</a>
-  <a href="#diagnosis">Diagnosis</a>
-  <a href="#support">Support</a>
-  <a href="#resources">Resources</a>
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-brand">Autism Guide</div>
+  <ul class="nav-links">
+    <li><a href="#what">What Is Autism</a></li>
+    <li><a href="#signs">Signs</a></li>
+    <li><a href="#causes">Causes</a></li>
+    <li><a href="#diagnosis">Diagnosis</a></li>
+    <li><a href="#support">Support</a></li>
+    <li><a href="#resources">Resources</a></li>
+  </ul>
 </nav>
 
-<main>
-
-  <div class="intro-box">
-    Autism spectrum disorder (ASD) is a lifelong neurological difference that affects how a person communicates, learns, and experiences the world. It is called a "spectrum" because it looks very different from one person to the next.
+<!-- HERO -->
+<section id="hero">
+  <canvas id="canvas"></canvas>
+  <div class="hero-inner">
+    <div class="hero-pill">Autism Spectrum Disorder</div>
+    <h1 class="hero-h1">Every Mind<br><span class="grad-text">Thinks Differently</span></h1>
+    <p class="hero-sub">A modern, comprehensive guide to understanding autism — its signs, causes, and the path toward support and inclusion.</p>
+    <a href="#what" class="hero-btn hoverable">Explore the Guide</a>
   </div>
+  <div class="scroll-hint"><span>Scroll</span><div class="scroll-line"></div></div>
+</section>
 
-  <!-- WHAT IS AUTISM -->
-  <section id="what-is">
-    <h2>What Is Autism?</h2>
-    <p>
-      Autism spectrum disorder is a developmental condition that is typically identified in early childhood, though many people are not diagnosed until adolescence or adulthood. It affects approximately 1 in 36 children in the United States, according to the CDC.
-    </p>
-    <p>
-      Autism is not a disease. It is not caused by poor parenting, vaccines, or anything a parent did or did not do. Autistic people are not broken or in need of being "fixed." Many autistic people and advocates prefer to speak of autism as a different way of being, rather than a disorder.
-    </p>
-    <blockquote>
-      "If you've met one person with autism, you've met one person with autism."<br>
-      — Dr. Stephen Shore, autistic educator and author
-    </blockquote>
+<!-- STATS -->
+<div id="stats-bar">
+  <div class="stats-inner stag">
+    <div class="stat">
+      <h3><span class="ctr" data-t="1">0</span> in 36</h3>
+      <p>Children diagnosed with ASD in the United States</p>
+      <div class="bar-wrap"><div class="bar" data-w="78"></div></div>
+    </div>
+    <div class="stat">
+      <h3><span class="ctr" data-t="4">0</span>×</h3>
+      <p>More commonly diagnosed in boys than girls</p>
+      <div class="bar-wrap"><div class="bar" data-w="58"></div></div>
+    </div>
+    <div class="stat">
+      <h3><span class="ctr" data-t="75">0</span>%</h3>
+      <p>Of autistic people also have another condition</p>
+      <div class="bar-wrap"><div class="bar" data-w="75"></div></div>
+    </div>
+    <div class="stat">
+      <h3><span class="ctr" data-t="5">0</span>M+</h3>
+      <p>Autistic adults living in the United States</p>
+      <div class="bar-wrap"><div class="bar" data-w="52"></div></div>
+    </div>
+  </div>
+</div>
 
-    <div class="fact-grid">
-      <div class="fact-card">
-        <h3>How common is it?</h3>
-        <p>About 1 in 36 children are diagnosed with ASD in the U.S. It is about 4 times more commonly diagnosed in boys than girls, though girls are believed to be significantly underdiagnosed.</p>
-      </div>
-      <div class="fact-card">
-        <h3>Who can be autistic?</h3>
-        <p>Autism occurs in all racial, ethnic, and socioeconomic groups. It spans every level of intellectual ability — many autistic people have average or above-average intelligence.</p>
-      </div>
-      <div class="fact-card">
-        <h3>Is it a lifelong condition?</h3>
-        <p>Yes. Autism does not go away, though people develop new skills and coping strategies throughout their lives with the right support and environment.</p>
-      </div>
-      <div class="fact-card">
-        <h3>What happened to Asperger's?</h3>
-        <p>In 2013, Asperger syndrome was folded into the broader category of autism spectrum disorder in the DSM-5. Some people still use the term to describe their experience.</p>
+<!-- WHAT IS AUTISM -->
+<div id="what" class="section">
+  <div class="what-grid">
+    <div class="rev-l">
+      <span class="s-tag">Overview</span>
+      <h2 class="s-title">What Is <span class="grad-text">Autism?</span></h2>
+      <p style="color:var(--dim);line-height:1.78;margin-bottom:18px;">Autism spectrum disorder (ASD) is a lifelong neurological difference affecting how a person communicates, learns, and experiences the world. It is called a "spectrum" because no two autistic people are alike.</p>
+      <p style="color:var(--dim);line-height:1.78;">Autism is not a disease. It is not caused by parenting choices or vaccines. Many autistic people describe it as a different way of thinking — not a defect. Early diagnosis is valuable, but it is never too late to seek an evaluation at any age.</p>
+    </div>
+    <div class="rev-r">
+      <div class="what-visual">
+        <div class="rings-wrap">
+          <div class="ring-core">🧠</div>
+          <div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div>
+          <div class="orbit-ring" style="width:170px;height:170px;animation-duration:9s">
+            <div class="orbit-dot" style="background:var(--pink)"></div>
+          </div>
+          <div class="orbit-ring" style="width:250px;height:250px;animation-duration:15s;animation-direction:reverse">
+            <div class="orbit-dot" style="background:var(--cyan)"></div>
+          </div>
+          <div class="orbit-ring" style="width:330px;height:330px;animation-duration:22s">
+            <div class="orbit-dot" style="background:var(--purple)"></div>
+          </div>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
+  <div class="mini-grid stag">
+    <div class="mini-c hoverable"><div class="ico">📊</div><h4>How Common?</h4><p>About 1 in 36 children are diagnosed with ASD in the U.S. — one of the most prevalent developmental conditions.</p></div>
+    <div class="mini-c hoverable"><div class="ico">🌍</div><h4>Who Is Affected?</h4><p>Autism occurs across all racial, ethnic, and socioeconomic groups worldwide. No community is excluded.</p></div>
+    <div class="mini-c hoverable"><div class="ico">♾️</div><h4>Lifelong?</h4><p>Yes. Autism does not go away, but people develop new skills and strategies throughout their lives with support.</p></div>
+    <div class="mini-c hoverable"><div class="ico">📋</div><h4>Asperger's Syndrome</h4><p>In 2013, Asperger's was folded into the broader ASD category in the DSM-5. Some still use the term.</p></div>
+  </div>
+</div>
 
-  <!-- SIGNS & SYMPTOMS -->
-  <section id="signs">
-    <h2>Signs &amp; Symptoms</h2>
-    <p>
-      Autism affects people differently. The characteristics below are common, but no single person will have all of them, and they will vary in how strongly they appear.
-    </p>
+<!-- QUOTE -->
+<div id="quote-band" class="rev">
+  <p class="q-text"><span class="q-mark">"</span>If you've met one person with autism, you've met one person with autism.</p>
+  <p class="q-by">— Dr. Stephen Shore, autistic educator and author</p>
+</div>
 
-    <h3>Social Communication</h3>
-    <ul>
-      <li>Difficulty with back-and-forth conversation</li>
-      <li>Trouble reading facial expressions, body language, or tone of voice</li>
-      <li>Delayed speech development, or little to no spoken language</li>
-      <li>Taking language very literally ("it's raining cats and dogs" is confusing)</li>
-      <li>Preferring to be alone or having difficulty making friends</li>
-    </ul>
+<!-- SIGNS & SYMPTOMS -->
+<div id="signs" class="section">
+  <span class="s-tag rev">Recognition</span>
+  <h2 class="s-title rev">Signs &amp; <span class="grad-text">Symptoms</span></h2>
+  <p class="s-desc rev">Autism presents differently in every person. These are common characteristics — no individual will have all of them, and they vary widely in intensity.</p>
+  <div class="tabs rev">
+    <button class="tab-btn on" data-tab="social">Social Communication</button>
+    <button class="tab-btn" data-tab="behavior">Behavior &amp; Interests</button>
+    <button class="tab-btn" data-tab="early">Early Signs in Children</button>
+  </div>
+  <div class="tab-panel on stag" id="tp-social">
+    <div class="sym-card hoverable"><div class="ico">💬</div><h4>Conversation Flow</h4><p>Difficulty with back-and-forth conversation and knowing when to take turns speaking.</p></div>
+    <div class="sym-card hoverable"><div class="ico">😶</div><h4>Reading Expressions</h4><p>Trouble interpreting facial expressions, body language, and tone of voice.</p></div>
+    <div class="sym-card hoverable"><div class="ico">🗣️</div><h4>Speech Development</h4><p>Delayed speech or, in some individuals, little to no spoken language.</p></div>
+    <div class="sym-card hoverable"><div class="ico">📖</div><h4>Literal Thinking</h4><p>Taking language very literally — idioms like "it's raining cats and dogs" cause genuine confusion.</p></div>
+    <div class="sym-card hoverable"><div class="ico">🙋</div><h4>Social Preference</h4><p>Preferring solitude or having difficulty making and keeping friendships.</p></div>
+    <div class="sym-card hoverable"><div class="ico">👁️</div><h4>Eye Contact</h4><p>Limited or atypical eye contact during conversations and interactions.</p></div>
+  </div>
+  <div class="tab-panel stag" id="tp-behavior">
+    <div class="sym-card hoverable"><div class="ico">🌟</div><h4>Intense Interests</h4><p>Deep, focused interest in specific topics — often with extraordinary depth of knowledge.</p></div>
+    <div class="sym-card hoverable"><div class="ico">🔄</div><h4>Repetitive Movements</h4><p>Rocking, hand-flapping, spinning — often called stimming. These are self-regulating behaviors.</p></div>
+    <div class="sym-card hoverable"><div class="ico">📅</div><h4>Need for Routine</h4><p>Strong need for predictability; significant distress when routines change unexpectedly.</p></div>
+    <div class="sym-card hoverable"><div class="ico">🔊</div><h4>Sensory Sensitivities</h4><p>Unusual reactions to sounds, lights, textures, smells, or other sensory input.</p></div>
+    <div class="sym-card hoverable"><div class="ico">📐</div><h4>Order &amp; Arrangement</h4><p>Lining up objects or insisting things remain in a specific, exact arrangement.</p></div>
+    <div class="sym-card hoverable"><div class="ico">🎯</div><h4>Focused Attention</h4><p>Intense concentration on areas of interest, sometimes to the exclusion of other activities.</p></div>
+  </div>
+  <div class="tab-panel stag" id="tp-early">
+    <div class="sym-card hoverable"><div class="ico">👆</div><h4>No Pointing or Waving</h4><p>Not pointing or waving by 12 months — a key early communication milestone.</p></div>
+    <div class="sym-card hoverable"><div class="ico">🔤</div><h4>Delayed Babbling</h4><p>No babbling or meaningful words by 16 months; no two-word phrases by 24 months.</p></div>
+    <div class="sym-card hoverable"><div class="ico">📣</div><h4>Name Response</h4><p>Not consistently responding when their name is called by a familiar voice.</p></div>
+    <div class="sym-card hoverable"><div class="ico">📉</div><h4>Skill Regression</h4><p>Loss of previously acquired language or social skills — a red flag at any age.</p></div>
+    <div class="sym-card hoverable"><div class="ico">👁️</div><h4>Eye Contact</h4><p>Reduced or absent eye contact with caregivers from an early age.</p></div>
+    <div class="sym-card hoverable"><div class="ico">🤝</div><h4>Shared Interest</h4><p>Not pointing to share interest — like pointing at an airplane overhead to show a caregiver.</p></div>
+  </div>
+</div>
 
-    <h3>Behavior and Interests</h3>
-    <ul>
-      <li>Intense, focused interest in specific topics</li>
-      <li>Repetitive movements such as rocking, hand-flapping, or spinning</li>
-      <li>Strong need for routine and difficulty with unexpected change</li>
-      <li>Unusual reactions to sensory input — sounds, lights, textures, smells</li>
-      <li>Lining up objects or insisting that things stay in a specific order</li>
-    </ul>
+<!-- CAUSES -->
+<div id="causes" class="section">
+  <span class="s-tag rev">Understanding</span>
+  <h2 class="s-title rev">What <span class="grad-text">Causes</span> Autism?</h2>
+  <p class="s-desc rev">Researchers believe autism results from a combination of genetic and environmental factors. No single gene is responsible — most cases have no single clear explanation.</p>
+  <div class="causes-grid stag">
+    <div class="cause-c hoverable"><span class="ico">🧬</span><h3>Genetic Factors</h3><p>Many genes appear to be involved. Having a sibling with autism meaningfully increases likelihood of a diagnosis.</p></div>
+    <div class="cause-c hoverable"><span class="ico">👨‍👩‍👧</span><h3>Parental Age</h3><p>Having older parents at the time of birth is associated with a modestly higher risk of autism.</p></div>
+    <div class="cause-c hoverable"><span class="ico">🏥</span><h3>Birth Factors</h3><p>Low birth weight, premature birth, and certain pregnancy complications are associated with increased risk.</p></div>
+    <div class="cause-c hoverable"><span class="ico">🔬</span><h3>Other Conditions</h3><p>Genetic conditions such as Fragile X syndrome and tuberous sclerosis are associated with autism.</p></div>
+    <div class="cause-c hoverable"><span class="ico">🧪</span><h3>Ongoing Research</h3><p>Scientists continue studying brain development, immune function, and environmental factors.</p></div>
+    <div class="cause-c hoverable"><span class="ico">♾️</span><h3>No Single Cause</h3><p>Autism is not caused by any one thing. It's shaped by many interacting factors across development.</p></div>
+  </div>
+  <div class="myth-box rev">
+    <div class="ico">🚫</div>
+    <div>
+      <h3>Myth: Vaccines Cause Autism</h3>
+      <p>This claim originated from a 1998 study that was fully retracted. It has been thoroughly disproven by dozens of large-scale studies involving millions of children worldwide. Vaccines are safe and do not cause autism.</p>
+    </div>
+  </div>
+</div>
 
-    <h3>Early Signs in Young Children</h3>
-    <ul>
-      <li>Not pointing or waving by 12 months</li>
-      <li>No babbling or meaningful words by 16 months</li>
-      <li>Not responding to their name being called</li>
-      <li>Loss of previously acquired language or social skills</li>
-      <li>Limited or no eye contact</li>
-    </ul>
-  </section>
+<!-- DIAGNOSIS -->
+<div id="diagnosis" class="section">
+  <span class="s-tag rev" style="text-align:center;display:block">Evaluation</span>
+  <h2 class="s-title rev" style="text-align:center">The Path to <span class="grad-text">Diagnosis</span></h2>
+  <p class="s-desc rev" style="margin:0 auto 60px;text-align:center">No blood test or brain scan diagnoses autism. Evaluation is based on careful behavioral observation by a team of specialists.</p>
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Step 1</div><h3>Talk to Your Doctor</h3><p>Share your concerns with a pediatrician or family doctor. Describe specific behaviors and when they first appeared.</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Step 2</div><h3>Request a Referral</h3><p>Ask for a referral to a developmental pediatrician, child psychologist, or multidisciplinary evaluation team.</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Step 3</div><h3>Complete Questionnaires</h3><p>Parents, caregivers, and teachers fill out standardized behavioral questionnaires used in the evaluation.</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Step 4</div><h3>Behavioral Observation</h3><p>Specialists observe communication and social interaction in both structured and unstructured settings.</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-step">Step 5</div><h3>Receive Results</h3><p>The team shares findings, discusses the diagnosis, and outlines recommended supports and next steps.</p></div>
+  </div>
+</div>
 
-  <!-- CAUSES -->
-  <section id="causes">
-    <h2>Causes</h2>
-    <p>
-      Researchers believe autism results from a combination of genetic and environmental factors. No single gene has been identified as the cause — many genes appear to be involved, and most cases have no single clear explanation.
-    </p>
-    <p>
-      Risk factors that have been studied include:
-    </p>
-    <ul>
-      <li>Having a sibling with autism</li>
-      <li>Having older parents at the time of birth</li>
-      <li>Certain genetic conditions, such as Fragile X syndrome or tuberous sclerosis</li>
-      <li>Very low birth weight or premature birth</li>
-    </ul>
-    <p>
-      <strong>Vaccines do not cause autism.</strong> This claim originated from a 1998 study that was fully retracted and has been thoroughly disproven by dozens of large-scale studies involving millions of children worldwide.
-    </p>
-  </section>
+<!-- SUPPORT -->
+<div id="support" class="section">
+  <span class="s-tag rev">Help &amp; Resources</span>
+  <h2 class="s-title rev">Support &amp; <span class="grad-text">Treatment</span></h2>
+  <p class="s-desc rev">There is no cure for autism — many autistic people don't want one. What matters is access to the right support to live a full, meaningful life.</p>
+  <div class="sup-grid stag">
+    <div class="sup-c hoverable"><div class="sup-glow" style="background:var(--cyan)"></div><div class="sup-icon" style="background:rgba(0,212,255,0.1)">🗣️</div><h3>Speech-Language Therapy</h3><p>Builds verbal and nonverbal communication skills and helps with social language use.</p></div>
+    <div class="sup-c hoverable"><div class="sup-glow" style="background:var(--purple)"></div><div class="sup-icon" style="background:rgba(108,99,255,0.1)">🖐️</div><h3>Occupational Therapy</h3><p>Supports sensory processing, fine motor skills, and practical daily living activities.</p></div>
+    <div class="sup-c hoverable"><div class="sup-glow" style="background:var(--pink)"></div><div class="sup-icon" style="background:rgba(255,107,157,0.1)">📊</div><h3>Behavioral Support</h3><p>Structured, evidence-based strategies for building skills and addressing challenging behaviors.</p></div>
+    <div class="sup-c hoverable"><div class="sup-glow" style="background:var(--gold)"></div><div class="sup-icon" style="background:rgba(255,215,0,0.1)">👥</div><h3>Social Skills Groups</h3><p>Safe, structured settings to practice navigating social situations alongside peers.</p></div>
+    <div class="sup-c hoverable"><div class="sup-glow" style="background:var(--cyan)"></div><div class="sup-icon" style="background:rgba(0,212,255,0.1)">🏫</div><h3>Educational Accommodations</h3><p>IEPs and 504 plans in schools provide tailored learning environments and services.</p></div>
+    <div class="sup-c hoverable"><div class="sup-glow" style="background:var(--purple)"></div><div class="sup-icon" style="background:rgba(108,99,255,0.1)">❤️</div><h3>Family &amp; Community</h3><p>Understanding, patient people in an autistic person's life are among the most powerful supports.</p></div>
+  </div>
+</div>
 
-  <!-- DIAGNOSIS -->
-  <section id="diagnosis">
-    <h2>Diagnosis</h2>
-    <p>
-      There is no blood test or brain scan for autism. Diagnosis is based on careful observation of behavior and development, typically by a team that may include a psychologist, speech-language pathologist, or developmental pediatrician.
-    </p>
-    <p>
-      Parents or caregivers who have concerns should speak with their child's pediatrician. Early diagnosis is valuable because it opens the door to support services sooner — but it is never too late to seek an evaluation at any age.
-    </p>
-    <h3>Steps toward a diagnosis</h3>
-    <ul>
-      <li>Talk to a pediatrician or family doctor about your concerns</li>
-      <li>Ask for a referral to a developmental specialist or evaluation team</li>
-      <li>Complete questionnaires and behavioral observation sessions</li>
-      <li>Gather developmental history and school or caregiver observations</li>
-    </ul>
-  </section>
-
-  <!-- SUPPORT -->
-  <section id="support">
-    <h2>Support &amp; Treatment</h2>
-    <p>
-      There is no cure for autism, and many autistic people do not want one. What matters is that autistic people have access to the support they need to live full, meaningful lives.
-    </p>
-    <h3>Common forms of support</h3>
-    <ul>
-      <li><strong>Speech-language therapy</strong> — helps with communication, both verbal and nonverbal</li>
-      <li><strong>Occupational therapy</strong> — helps with sensory processing and daily living skills</li>
-      <li><strong>Behavioral supports</strong> — structured strategies for building skills and managing challenges</li>
-      <li><strong>Social skills groups</strong> — practice navigating social situations in a safe setting</li>
-      <li><strong>Educational accommodations</strong> — IEPs and 504 plans in schools</li>
-    </ul>
-    <p>
-      Family support, peer connections, and community acceptance are just as important as formal therapy. Many autistic adults point to understanding, patient people in their lives as the most significant factor in their wellbeing.
-    </p>
-  </section>
-
-  <!-- RESOURCES -->
-  <section id="resources">
-    <h2>Resources</h2>
-    <p>The following organizations offer reliable information and support:</p>
-    <ul>
-      <li><strong>Autism Society of America</strong> — autism-society.org</li>
-      <li><strong>Autism Science Foundation</strong> — autismsciencefoundation.org</li>
-      <li><strong>ASAN (Autistic Self Advocacy Network)</strong> — autisticadvocacy.org</li>
-      <li><strong>CDC — Autism Spectrum Disorder</strong> — cdc.gov/ncbddd/autism</li>
-      <li><strong>SPARK for Autism</strong> — sparkforautism.org</li>
-    </ul>
-    <p>
-      If you are an autistic person or the parent of an autistic child looking for local support, your pediatrician, school district, or state health department can point you to services in your area.
-    </p>
-  </section>
-
-</main>
+<!-- RESOURCES -->
+<div id="resources" class="section">
+  <span class="s-tag rev">Further Reading</span>
+  <h2 class="s-title rev">Trusted <span class="grad-text">Resources</span></h2>
+  <p class="s-desc rev">Reliable, evidence-based organizations for autistic people, families, and caregivers.</p>
+  <div class="res-grid stag">
+    <div class="res-c hoverable"><span class="res-tag">Advocacy</span><h3>Autism Society of America</h3><p>The nation's leading grassroots autism organization, with local chapters and family support.</p><span class="res-link">autism-society.org →</span></div>
+    <div class="res-c hoverable"><span class="res-tag">Self-Advocacy</span><h3>Autistic Self Advocacy Network</h3><p>Run by and for autistic people — focused on rights, policy, and community building.</p><span class="res-link">autisticadvocacy.org →</span></div>
+    <div class="res-c hoverable"><span class="res-tag">Science</span><h3>Autism Science Foundation</h3><p>Funds and disseminates research to understand and improve lives of people with ASD.</p><span class="res-link">autismsciencefoundation.org →</span></div>
+    <div class="res-c hoverable"><span class="res-tag">Government</span><h3>CDC — Autism Resources</h3><p>Official data, screening tools, and guidance from the Centers for Disease Control.</p><span class="res-link">cdc.gov/ncbddd/autism →</span></div>
+    <div class="res-c hoverable"><span class="res-tag">Research</span><h3>SPARK for Autism</h3><p>The largest autism study in the US, connecting families with researchers to advance discovery.</p><span class="res-link">sparkforautism.org →</span></div>
+    <div class="res-c hoverable"><span class="res-tag">Community</span><h3>Find Local Support</h3><p>Your pediatrician, school district, or state health department can direct you to local services.</p><span class="res-link">Talk to your doctor →</span></div>
+  </div>
+</div>
 
 <footer>
-  <p>This page is for general informational purposes only. It is not a substitute for professional medical advice.</p>
-  <p style="margin-top: 8px;">Understanding Autism &mdash; A public information resource</p>
+  <span class="footer-brand">Understanding Autism</span>
+  <p>This page is for general informational purposes only.<br>It is not a substitute for professional medical advice.</p>
 </footer>
 
+<script>
+/* ─── CURSOR ─── */
+const cur = document.getElementById('cur');
+const dot = document.getElementById('cur-dot');
+let mx=0,my=0,cx=0,cy=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.cssText=`left:${mx-2.5}px;top:${my-2.5}px`});
+(function tickCursor(){cx+=(mx-cx)*0.13;cy+=(my-cy)*0.13;cur.style.cssText=`left:${cx-11}px;top:${cy-11}px`;requestAnimationFrame(tickCursor)})();
+document.querySelectorAll('.hoverable,a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>cur.style.transform='scale(2.2)');
+  el.addEventListener('mouseleave',()=>cur.style.transform='scale(1)');
+});
+
+/* ─── NAVBAR ─── */
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>60));
+
+/* ─── PARTICLES ─── */
+const cv=document.getElementById('canvas'),c=cv.getContext('2d');
+let W,H,pts=[];
+function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight}
+resize();window.addEventListener('resize',resize);
+const COLS=['#6c63ff','#00d4ff','#ff6b9d'];
+class P{
+  constructor(){this.init()}
+  init(){this.x=Math.random()*W;this.y=Math.random()*H;this.vx=(Math.random()-.5)*.55;this.vy=(Math.random()-.5)*.55;this.r=Math.random()*1.8+.8;this.col=COLS[0|Math.random()*3];this.a=Math.random()*.5+.2}
+  step(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>W||this.y<0||this.y>H)this.init()}
+  draw(){c.beginPath();c.arc(this.x,this.y,this.r,0,6.28);c.fillStyle=this.col;c.globalAlpha=this.a;c.fill()}
+}
+for(let i=0;i<130;i++)pts.push(new P);
+function frame(){
+  c.clearRect(0,0,W,H);
+  for(let i=0;i<pts.length;i++){
+    pts[i].step();pts[i].draw();
+    for(let j=i+1;j<pts.length;j++){
+      const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.hypot(dx,dy);
+      if(d<140){c.beginPath();c.moveTo(pts[i].x,pts[i].y);c.lineTo(pts[j].x,pts[j].y);c.strokeStyle='#6c63ff';c.globalAlpha=(1-d/140)*.14;c.lineWidth=.7;c.stroke()}
+    }
+  }
+  c.globalAlpha=1;requestAnimationFrame(frame);
+}
+frame();
+
+/* ─── INTERSECTION OBSERVER ─── */
+function onShow(entries){
+  entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    e.target.classList.add('show');
+    e.target.querySelectorAll('.bar').forEach(b=>{b.style.width=b.dataset.w+'%'});
+    e.target.querySelectorAll('.ctr').forEach(animCounter);
+    ob.unobserve(e.target);
+  });
+}
+const ob=new IntersectionObserver(onShow,{threshold:.14});
+document.querySelectorAll('.rev,.rev-l,.rev-r,.stag,.tl-item').forEach(el=>ob.observe(el));
+
+/* ─── COUNTER ─── */
+function animCounter(el){
+  const t=+el.dataset.t,t0=performance.now();
+  (function tick(now){const p=Math.min((now-t0)/1400,1),e=1-Math.pow(1-p,3);el.textContent=0|e*t;p<1?requestAnimationFrame(tick):el.textContent=t})(t0);
+}
+
+/* ─── TABS ─── */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('on','show'));
+    btn.classList.add('on');
+    const panel=document.getElementById('tp-'+btn.dataset.tab);
+    panel.classList.add('on');
+    // stagger animate children
+    Array.from(panel.children).forEach((ch,i)=>{
+      ch.style.opacity='0';ch.style.transform='translateY(20px)';
+      ch.style.transition=`opacity .45s ${i*.08+.05}s ease, transform .45s ${i*.08+.05}s ease`;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{ch.style.opacity='1';ch.style.transform='none'}));
+    });
+  });
+});
+// init first tab
+document.querySelectorAll('#tp-social > *').forEach((ch,i)=>{
+  ch.style.opacity='0';ch.style.transform='translateY(20px)';ch.style.transition=`opacity .45s ${i*.08+.3}s ease, transform .45s ${i*.08+.3}s ease`;
+  setTimeout(()=>{ch.style.opacity='1';ch.style.transform='none'},50);
+});
+
+/* ─── 3D TILT ─── */
+document.querySelectorAll('.cause-c,.sup-c,.mini-c,.res-c').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`perspective(700px) rotateY(${x*10}deg) rotateX(${-y*10}deg) translateY(-6px)`;
+  });
+  card.addEventListener('mouseleave',()=>card.style.transform='');
+});
+</script>
 </body>
 </html>
